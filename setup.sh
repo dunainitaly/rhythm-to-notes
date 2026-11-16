@@ -1,2 +1,4 @@
 sudo pacman -S python-soundfile
-pip install sounddevice soundfile
+python -m venv .venv
+source .venv/bin/activate   
+pip install sounddevice soundfile matplotlib numpy

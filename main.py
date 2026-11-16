@@ -1,6 +1,7 @@
 import sounddevice as sd
 import soundfile as sf
-
+import matplotlib.pyplot as plt
+import numpy as np
 
 SAMPLE_RATE = 44100
 CHANNELS = 1
@@ -24,6 +25,18 @@ def load_audio(filename:str):
     audio, sr = sf.read(filename)
     return audio, sr
 
+def visualise(audio, sample_rate):
+    time = np.arange(len(audio)) / sample_rate
+
+    plt.plot(time, audio)
+    plt.xlabel("Time (seconds)")
+    plt.ylabel("Amplitude")
+    plt.title("Audio waveform")
+    plt.grid()
+    plt.show()
+
 record_audio("recording.wav")
-audio, sr = load_audio("recording.wav")
+
+audio, sample_rate = load_audio("recording.wav")
+
 
