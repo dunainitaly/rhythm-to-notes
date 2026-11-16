@@ -65,12 +65,9 @@ def detect_beats(timed_audio, loudness_threshold:float, beat_separation:float=0.
 def export_to_musescore(tempo_number:int, notes:dict[str,int], filename:str):
     score = stream.Score()
     part = stream.Part()
-    for notee in notes:
-        print(notee)
 
     part.append(meter.TimeSignature("4/4"))
     part.append(tempo.MetronomeMark(number=tempo_number))
-    print(notes)
 
     for pitch, duration in notes:
         n = note.Note(pitch)
@@ -94,34 +91,37 @@ def to_notes(beats, metronome:int):
     notes:dict[str,int] = []
     possible_notes = []
 
-    i = 1
-    note_duration:float=8
-    minimal_note_duration = 0.04
+    iteration = 1
+    maximum_note_duration:float=4
+    minimal_note_duration = 0.2
+    note_duration=maximum_note_duration
     while note_duration > minimal_note_duration:
-        note_duration = 4/(2**i)
+        note_duration = maximum_note_duration/(2**iteration)
         possible_notes.append(note_duration)
-        if note_duration/3 > minimal_note_duration:
-            possible_notes.append(note_duration/3)
-        note_duration += 4/(2**(i+1))
+        #if note_duration/3 > minimal_note_duration:
+        #    possible_notes.append(note_duration/3)
+        note_duration += maximum_note_duration/(2**(iteration+1))
         possible_notes.append(note_duration)
-        i += 1
+        iteration += 1
     possible_notes.sort()
 
     preprocessed_beats = []
-    for i in range(len(beats)):
-        preprocessed_beats.append(beats[0+i] - beats[0])
+    for iteration in range(len(beats)):
+        preprocessed_beats.append(beats[0+iteration] - beats[0])
 
-    for i, beat in enumerate(preprocessed_beats):
-        if len(preprocessed_beats)>i+1:
-            beat_duration = preprocessed_beats[i+1] - beat
+    for iteration, beat in enumerate(preprocessed_beats):
+        if len(preprocessed_beats)>iteration+1:
+            beat_duration = preprocessed_beats[iteration+1] - beat
             diff_tempo = beat_duration/(60/metronome)
             match = find_closest(possible_notes, diff_tempo)
+            print(abs(diff_tempo-match))
             notes.append(("C4", match))
+    print(possible_notes,notes)
     return notes
 
 record_filename = "150.wav"
 
-record_audio(record_filename, duration = 20)
+# record_audio(record_filename, duration = 20)
 
 loudness_threshold = 0.035
 beat_separation = 0.06
@@ -133,7 +133,7 @@ beats = detect_beats(timed_audio,
                      loudness_threshold=loudness_threshold,
                      beat_separation=beat_separation
                 ) 
-notes = to_notes(beats, metronome, beat_separation)
-# visualise(timed_audio, beats)
+notes = to_notes(beats, metronome)
+visualise(timed_audio, beats)
 export_to_musescore(tempo_number = metronome, notes = notes, filename = "composition.musicxml")
 
