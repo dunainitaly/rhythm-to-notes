@@ -6,8 +6,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numpy.typing import NDArray
 
-rythm:list = []
-temp:int = 60
 
 def record_audio(filename:str, sample_rate = 44100, channels = 1, duration = 5): #not working
     audio = sd.rec(
@@ -121,7 +119,7 @@ def to_notes(beats, metronome:int):
     print(possible_notes,notes)
     return notes
 
-record_filename = "150.wav"
+record_filename = "recording.wav"
 
 # record_audio(record_filename, duration = 20)
 
@@ -136,6 +134,6 @@ beats = detect_beats(timed_audio,
                      beat_separation=beat_separation
                 ) 
 notes = to_notes(beats, metronome)
-#visualise(timed_audio, beats)
+visualise(timed_audio, beats)
 export_to_musescore(tempo_number = metronome, notes = notes, filename = "composition.musicxml")
 
