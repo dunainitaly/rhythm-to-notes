@@ -1,4 +1,5 @@
 import sounddevice as sd
+from itertools import cycle
 from music21 import stream, note, meter, tempo
 import soundfile as sf
 import matplotlib.pyplot as plt
@@ -92,6 +93,7 @@ def to_notes(beats, metronome:int):
     possible_notes = []
 
     iteration = 1
+    notes_to_alternate = cycle(["C4", "E4"])
     maximum_note_duration:float=4
     minimal_note_duration = 0.2
     note_duration=maximum_note_duration
@@ -115,7 +117,7 @@ def to_notes(beats, metronome:int):
             diff_tempo = beat_duration/(60/metronome)
             match = find_closest(possible_notes, diff_tempo)
             print(abs(diff_tempo-match))
-            notes.append(("C4", match))
+            notes.append((next(notes_to_alternate), match))
     print(possible_notes,notes)
     return notes
 
@@ -134,6 +136,6 @@ beats = detect_beats(timed_audio,
                      beat_separation=beat_separation
                 ) 
 notes = to_notes(beats, metronome)
-visualise(timed_audio, beats)
+#visualise(timed_audio, beats)
 export_to_musescore(tempo_number = metronome, notes = notes, filename = "composition.musicxml")
 
