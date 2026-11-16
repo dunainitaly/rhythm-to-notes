@@ -11,7 +11,7 @@ DURATION = 5
 rythm:list = []
 temp:int = 60
 
-def record_audio(filename:str):
+def record_audio(filename:str): #not working
     audio = sd.rec(
         int(DURATION * SAMPLE_RATE),
         samplerate=SAMPLE_RATE,
@@ -22,42 +22,56 @@ def record_audio(filename:str):
     sd.wait()
     sf.write(filename, audio, SAMPLE_RATE)
 
+
 def load_audio(filename:str):
     audio, sr = sf.read(filename)
     return audio, sr
 
-def add_timestamps(audio, sample_rate):
+def add_timestamps(audio: NDArray[np.float32], sample_rate: int) -> NDArray[np.float64]:
     time = np.arange(len(audio)) / sample_rate
     timed_audio = np.column_stack((time, audio))
     return timed_audio
 
-def visualise(timed_audio: NDArray[np.float64]):
-    time = np.arange(len(audio)) / sample_rate
+def visualise(
+    timed_audio: NDArray[np.float64],
+    beats: NDArray[np.float64]
+):
+    plt.plot(timed_audio[:, 0], timed_audio[:, 1], label="Audio waveform")
 
-    plt.plot(timed_audio[:, 0], timed_audio[:, 1])
+    for beat in beats:
+        plt.axvline(x=beat, color="red", alpha=0.7, linestyle="--")
+
     plt.xlabel("Time (seconds)")
     plt.ylabel("Amplitude")
-    plt.title("Audio waveform")
+    plt.title("Audio waveform with detected beats")
     plt.grid()
+    plt.legend()
     plt.show()
 
-def detect_beats(timed_audio, treshold:float)-> NDArray[np.float64]:
-    beats = np.argwhere(timed_audio[:, 1]>treshold)
-    return beats
+def detect_beats(timed_audio, threshold:float)-> NDArray[np.float64]:
+    beats = timed_audio[timed_audio[:, 1] > threshold, 0]
+    first:np.float64 = None
+    previous:np.float64 = None
+    tbeats = []
+    for beat in beats:
+        if first is None:
+            first = beat
+            tbeats.append(first)
+        if beat - first<0.02:
+            previous = beat
+            next
+        elif beat - previous > 0.08:
+            first = beat
+            tbeats.append(first)
+    return tbeats
+
 
 # record_audio("recording.wav")
 
 audio, sample_rate = load_audio("recording.wav")
 timed_audio = add_timestamps(audio, sample_rate)
-beats = detect_beats(timed_audio, 0.75)
-visualise(timed_audio)
+beats = detect_beats(timed_audio, 0.3)
+visualise(timed_audio, beats)
 print(beats)
-
-
-plt.figure()
-plt.hlines(1,1,20)  # Draw a horizontal line
-plt.eventplot(beats, orientation='horizontal', colors='b')
-plt.axis('off')
-plt.show()
 
 
