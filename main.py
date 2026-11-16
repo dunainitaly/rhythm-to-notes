@@ -4,18 +4,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numpy.typing import NDArray
 
-SAMPLE_RATE = 44100
-CHANNELS = 1
-DURATION = 5
-
 rythm:list = []
 temp:int = 60
 
-def record_audio(filename:str): #not working
+def record_audio(filename:str, sample_rate = 44100, channels = 1, duration = 5): #not working
     audio = sd.rec(
-        int(DURATION * SAMPLE_RATE),
-        samplerate=SAMPLE_RATE,
-        channels=CHANNELS,
+        int(duration * sample_rate),
+        samplerate=sample_rate,
+        channels=channels,
         dtype="float32"
     )
 
