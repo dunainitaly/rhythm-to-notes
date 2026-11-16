@@ -44,8 +44,8 @@ def visualise(
     plt.legend()
     plt.show()
 
-def detect_beats(timed_audio, threshold:float)-> NDArray[np.float64]:
-    beats = timed_audio[timed_audio[:, 1] > threshold, 0]
+def detect_beats(timed_audio, loudness_threshold:float, beat_separation:float=0.06)-> NDArray[np.float64]:
+    beats = timed_audio[timed_audio[:, 1] > loudness_threshold, 0]
     first:np.float64 = None
     previous:np.float64 = None
     tbeats = []
@@ -53,20 +53,22 @@ def detect_beats(timed_audio, threshold:float)-> NDArray[np.float64]:
         if first is None:
             first = beat
             tbeats.append(first)
-        if beat - first<0.02:
+        if beat - first < beat_separation:
             previous = beat
             next
-        elif beat - previous > 0.08:
+        elif beat - previous > beat_separation:
             first = beat
             tbeats.append(first)
     return tbeats
+def to_notes(beats, tempo):
+   notes = {} 
 
 
-record_audio("recording_test.wav", duration = 20)
+# record_audio("recording_test.wav", duration = 20)
 
 audio, sample_rate = load_audio("recording_test.wav")
 timed_audio = add_timestamps(audio, sample_rate)
-beats = detect_beats(timed_audio, 0.025)
+beats = detect_beats(timed_audio, 0.035)
 visualise(timed_audio, beats)
 print(beats)
 
