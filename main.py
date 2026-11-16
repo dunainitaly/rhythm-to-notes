@@ -25,6 +25,11 @@ def load_audio(filename:str):
     audio, sr = sf.read(filename)
     return audio, sr
 
+def add_timestamps(audio, sample_rate):
+    time = np.arange(len(audio)) / sample_rate
+    timed_audio = np.column_stack((time, audio))
+    return timed_audio
+
 def visualise(audio, sample_rate):
     time = np.arange(len(audio)) / sample_rate
 
@@ -34,9 +39,9 @@ def visualise(audio, sample_rate):
     plt.title("Audio waveform")
     plt.grid()
     plt.show()
-
-record_audio("recording.wav")
+def detect_beats(timed_audio):
+    pass
 
 audio, sample_rate = load_audio("recording.wav")
-
-
+timed_audio = add_timestamps(audio, sample_rate)
+print(timed_audio)
