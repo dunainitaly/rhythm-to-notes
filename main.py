@@ -16,7 +16,7 @@ def record_audio(filename:str, sample_rate = 44100, channels = 1, duration = 5):
     )
 
     sd.wait()
-    sf.write(filename, audio, SAMPLE_RATE)
+    sf.write(filename, audio, sample_rate)
 
 
 def load_audio(filename:str):
@@ -62,11 +62,11 @@ def detect_beats(timed_audio, threshold:float)-> NDArray[np.float64]:
     return tbeats
 
 
-# record_audio("recording.wav")
+record_audio("recording_test.wav", duration = 20)
 
-audio, sample_rate = load_audio("recording.wav")
+audio, sample_rate = load_audio("recording_test.wav")
 timed_audio = add_timestamps(audio, sample_rate)
-beats = detect_beats(timed_audio, 0.3)
+beats = detect_beats(timed_audio, 0.025)
 visualise(timed_audio, beats)
 print(beats)
 
