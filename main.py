@@ -49,20 +49,20 @@ def detect_beats(timed_audio, loudness_threshold:float, beat_separation:float=0.
     beats = timed_audio[timed_audio[:, 1] > loudness_threshold, 0]
     first:np.float64 = None
     previous:np.float64 = None
-    tbeats = []
+    filtered_beats = []
     for beat in beats:
         if first is None:
             first = beat
-            tbeats.append(first)
+            filtered_beats.append(first)
         if beat - first < beat_separation:
             previous = beat
             next
         elif beat - previous > beat_separation:
             first = beat
-            tbeats.append(first)
-    return tbeats
+            filtered_beats.append(first)
+    return filtered_beats
 
-def export_to_musescore(tempo_number:int, notes:dict[str,int]):
+def export_to_musescore(tempo_number:int, notes:dict[str,int], filename:str):
     score = stream.Score()
     part = stream.Part()
     for notee in notes:
@@ -79,7 +79,7 @@ def export_to_musescore(tempo_number:int, notes:dict[str,int]):
 
     score.append(part)
 
-    score.write("musicxml", fp="composition.musicxml")
+    score.write("musicxml", fp=filename)
 
 def find_closest(arr, target):
     left, right = 0, len(arr) - 1
@@ -90,41 +90,42 @@ def find_closest(arr, target):
             left += 1
     return arr[left]
 
-def to_notes(beats, metronome:int, sensitivity):
+def to_notes(beats, metronome:int):
     notes:dict[str,int] = []
     possible_notes = []
 
     i = 1
-    note_duration:float=10
-    while note_duration > 0.04:
+    note_duration:float=8
+    minimal_note_duration = 0.04
+    while note_duration > minimal_note_duration:
         note_duration = 4/(2**i)
         possible_notes.append(note_duration)
-        # possible_notes.append(note_duration/3)
+        if note_duration/3 > minimal_note_duration:
+            possible_notes.append(note_duration/3)
         note_duration += 4/(2**(i+1))
         possible_notes.append(note_duration)
         i += 1
     possible_notes.sort()
+
     preprocessed_beats = []
-    print(possible_notes)
     for i in range(len(beats)):
         preprocessed_beats.append(beats[0+i] - beats[0])
+
     for i, beat in enumerate(preprocessed_beats):
-        print(len(preprocessed_beats),i)
         if len(preprocessed_beats)>i+1:
             beat_duration = preprocessed_beats[i+1] - beat
             diff_tempo = beat_duration/(60/metronome)
             match = find_closest(possible_notes, diff_tempo)
             notes.append(("C4", match))
-            print(beat_duration, preprocessed_beats[i +1],beat, diff_tempo)
     return notes
 
 record_filename = "150.wav"
 
-# record_audio(record_filename, duration = 20)
+record_audio(record_filename, duration = 20)
 
 loudness_threshold = 0.035
 beat_separation = 0.06
-metronome = 140
+metronome = 150
 
 audio, sample_rate = load_audio(record_filename)
 timed_audio = add_timestamps(audio, sample_rate)
@@ -133,6 +134,6 @@ beats = detect_beats(timed_audio,
                      beat_separation=beat_separation
                 ) 
 notes = to_notes(beats, metronome, beat_separation)
-visualise(timed_audio, beats)
-export_to_musescore(tempo_number = metronome, notes = notes)
+# visualise(timed_audio, beats)
+export_to_musescore(tempo_number = metronome, notes = notes, filename = "composition.musicxml")
 
